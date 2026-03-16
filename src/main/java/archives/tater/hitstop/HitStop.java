@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 
@@ -43,8 +44,9 @@ public class HitStop implements ModInitializer {
 
 	private static int getDamageHitstopTicks(LivingEntity entity, DamageSource source, float originalDamage) {
 		if (source.is(DamageTypes.MACE_SMASH)) return (int) (originalDamage / 6);
-		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return (int) ((originalDamage - 10));
-		return (int) ((originalDamage / entity.getMaxHealth() - 1) * 15);
+		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return 0;
+		if (entity instanceof Enemy) return min(20, (int) ((originalDamage / max(20, entity.getMaxHealth()) - 1) * 15));
+		return 0;
 	}
 
 	public static void onDamage(LivingEntity entity, DamageSource source, float originalDamage, float amount, boolean blocked) {
