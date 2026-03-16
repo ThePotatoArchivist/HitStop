@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"archives.tater.hitstop.HitStop"
+		],
+		"client": [
+			"archives.tater.hitstop.HitStopClient"
 		]
 	},
 	"mixins": [

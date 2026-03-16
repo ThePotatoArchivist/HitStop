@@ -23,7 +23,7 @@ public class KineticWeaponMixin {
         if (!original) return false;
         if (!(entity instanceof Player) || !(entity.level() instanceof ServerLevel level)) return true;
 
-        HitStop.runHitStop(level.getServer(), (int) relativeSpeed, 0);
+        HitStop.runHitStop(level.getServer(), (int) (relativeSpeed - 0.5f), 0);
 
         return true;
     }

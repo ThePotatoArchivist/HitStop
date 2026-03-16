@@ -31,7 +31,7 @@ public class HitStop implements ModInitializer {
 	public static int hitstopTicks = 0;
 
 	public static void runHitStop(MinecraftServer server, int ticks, int rate) {
-		if (ticks <= 0) return;
+		if (ticks <= 0 || rate == 0 && ticks < 5) return;
 		if (hitstopTicks > 0)
 			return;
 		preHitstopTickRate = server.tickRateManager().tickrate();
@@ -43,9 +43,9 @@ public class HitStop implements ModInitializer {
 	}
 
 	private static int getDamageHitstopTicks(LivingEntity entity, DamageSource source, float originalDamage) {
-		if (source.is(DamageTypes.MACE_SMASH)) return (int) (originalDamage / 6);
-		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return 0;
-		if (entity instanceof Enemy) return min(20, (int) ((originalDamage / max(20, entity.getMaxHealth()) - 1) * 15));
+		if (source.is(DamageTypes.MACE_SMASH)) return max(5, (int) (originalDamage / 6));
+//		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return 0;
+//		if (entity instanceof Enemy) return min(20, (int) ((originalDamage / max(20, entity.getMaxHealth()) - 1) * 15));
 		return 0;
 	}
 
