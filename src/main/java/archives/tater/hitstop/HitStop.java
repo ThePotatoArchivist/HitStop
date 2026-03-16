@@ -2,7 +2,6 @@ package archives.tater.hitstop;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
@@ -10,10 +9,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static java.lang.Math.min;
+import static java.util.Objects.requireNonNull;
 
 public class HitStop implements ModInitializer {
 	public static final String MOD_ID = "hitstop";
@@ -27,6 +30,7 @@ public class HitStop implements ModInitializer {
 	public static int hitstopTicks = 0;
 
 	public static void runHitStop(MinecraftServer server, int ticks, int rate) {
+		if (ticks <= 0) return;
 		if (hitstopTicks > 0)
 			return;
 		preHitstopTickRate = server.tickRateManager().tickrate();
@@ -37,11 +41,20 @@ public class HitStop implements ModInitializer {
 			server.tickRateManager().setFrozen(true);
 	}
 
-	private static void onDamage(LivingEntity entity, DamageSource source) {
-		if(source.getEntity() instanceof Player && (source.is(DamageTypes.MACE_SMASH) || source.is(DamageTypes.SPEAR))) {
-			runHitStop(entity.level().getServer(), 8, 0);
-		}
+	private static int getDamageHitstopTicks(LivingEntity entity, DamageSource source, float originalDamage) {
+		if (source.is(DamageTypes.MACE_SMASH)) return (int) (originalDamage / 6);
+		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return (int) ((originalDamage - 10));
+		return (int) ((originalDamage / entity.getMaxHealth() - 1) * 15);
 	}
+
+	public static void onDamage(LivingEntity entity, DamageSource source, float originalDamage, float amount, boolean blocked) {
+        if (!(source.getEntity() instanceof Player)) return;
+		runHitStop(
+				requireNonNull(entity.level().getServer()),
+				getDamageHitstopTicks(entity, source, originalDamage),
+				0
+		);
+    }
 
 	@Override
 	public void onInitialize() {
@@ -66,14 +79,8 @@ public class HitStop implements ModInitializer {
 		});
 
 		ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register((level, entity, killedEntity, damageSource) -> {
-			if (entity instanceof Player && killedEntity.getMaxHealth() > 50) {
-				runHitStop(level.getServer(), 5, 3);
-			}
+			if (entity instanceof Player && killedEntity instanceof Enemy)
+                runHitStop(level.getServer(), min(10, (int) (killedEntity.getMaxHealth() - 50) / 10), 3);
 		});
-
-		ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, _, _, blocked) -> {
-			if (!blocked) onDamage(entity, source);
-		});
-		ServerLivingEntityEvents.AFTER_DEATH.register(HitStop::onDamage);
 	}
 }
