@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +26,9 @@ public abstract class PlayerMixin extends LivingEntity {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;playSound(Lnet/minecraft/world/entity/Entity;DDDLnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundSource;)V")
     )
     private void parryHitstop(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (level() instanceof ServerLevel level)
+        if (level() instanceof ServerLevel level) {
+            level.playSound(null, this, SoundEvents.IRON_GOLEM_REPAIR, getSoundSource(), 1f, 1f);
             HitStop.runHitStop(level.getServer(), 10, 0);
+        }
     }
 }

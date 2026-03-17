@@ -43,7 +43,7 @@ public class HitStop implements ModInitializer {
 	}
 
 	private static int getDamageHitstopTicks(LivingEntity entity, DamageSource source, float originalDamage) {
-		if (source.is(DamageTypes.MACE_SMASH)) return max(5, (int) (originalDamage / 6));
+		if (source.is(DamageTypes.MACE_SMASH)) return max(8, (int) (originalDamage / 6));
 //		if (source.is(DamageTypes.SPEAR) && source.getEntity() instanceof LivingEntity livingEntity && livingEntity.isUsingItem()) return 0;
 //		if (entity instanceof Enemy) return min(20, (int) ((originalDamage / max(20, entity.getMaxHealth()) - 1) * 15));
 		return 0;
